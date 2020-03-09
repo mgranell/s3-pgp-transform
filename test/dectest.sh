@@ -1,4 +1,4 @@
-#/bin/sh
+#/bin/bash
 rm ./dectest.*
 gpg --batch --trust-model always -r pgp@test.local -o dectest.md.pgp -e ../README.md
 aws s3 cp dectest.md.pgp s3://mg-s3-pgp-dec-bucket/

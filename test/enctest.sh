@@ -1,4 +1,4 @@
-#/bin/sh
+#/bin/bash
 rm ./README3.*
 aws s3 cp ../README.md s3://mg-s3-pgp-enc-bucket/README3.md
 aws s3api wait object-exists --bucket mg-s3-pgp-enc-bucket --key README3.md.pgp
