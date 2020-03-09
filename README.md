@@ -29,25 +29,25 @@ This compares with approx 50-400MB/s for a local on-disk gnupg, so there is plen
 
 Uses serverless to deploy, alter serverless.yml to specify buckets.
 
-Installation instructions:
+Installation instructions (for mac, replace brew with your package manager):
 
 ```
 npm install
 aws configure
 serverless deploy
+
+brew install gnupg
+base64 -d pgp-private.key.b64 | gpg --import
+
+(cd test; . enctest.sh)
+(cd test; . dectest.sh)
 ```
 
-### Setup the test files
+### Setup the large/performance test files
 This needs approx. 15GB as it creates test files 100MB, 1GB & 10GB raw, 
 and then compressed and encrypted versions (see setuptest.sh)
 ```
 (cd test; . setuptest.sh)
-```
-
-### Running the small tests
-```
-(cd test; . enctest.sh)
-(cd test; . dectest.sh)
 ```
 
 ### Copy into S3 manually, then invoke the function locally 
