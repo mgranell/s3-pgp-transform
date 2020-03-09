@@ -1,0 +1,72 @@
+org: mgranell
+app: s3-pgp
+# Welcome to serverless. Read the docs
+# https://serverless.com/framework/docs/
+
+# Serverless.yml is the configuration the CLI
+# uses to deploy your code to your provider of choice
+
+# The `service` block is the name of the service
+service: s3-pgp-transform
+
+plugins:
+  - serverless-webpack # Package our functions with Webpack
+#  - serverless-offline
+#  - serverless-dotenv-plugin # Load .env as environment variables
+
+
+# The `provider` block defines where your service will be deployed
+provider:
+  name: aws
+  cfnRole: arn:aws:iam::415369055075:role/CloudFormationAdminRole
+  runtime: nodejs12.x
+  iamRoleStatements:
+  - Effect: "Allow"
+    Action:
+      - "s3:*"
+    Resource: "*"
+  - Effect: "Allow"
+    Resource: !Ref publicKey
+    Action:
+      - "secretsmanager:*"      
+  timeout: 900
+  environment:
+    BASE64ENCODEDPRIVATEKEY:  ${file(./pgp-private.key.b64)}
+
+resources:
+  Resources:
+    publicKey:
+      Type: AWS::SecretsManager::Secret
+      Properties: 
+        Name: "pgp/public-key"
+        SecretString: ${file(./pgp-public.key.b64)}                
+      
+    privateKey:
+      Type: AWS::SecretsManager::Secret
+      Properties: 
+        Name: "pgp/private-key"
+        SecretString: ${file(./pgp-private.key.b64)}        
+            
+
+# The `functions` block defines what code to deploy
+functions:
+  encrypt:
+    handler: handler.s3encrypt
+    events:
+      - s3:
+          bucket: mg-s3-pgp-enc-bucket
+          event: s3:ObjectCreated:*
+
+  decrypt:
+    handler: handler.s3decrypt
+    events:
+      - s3:
+          bucket: mg-s3-pgp-dec-bucket
+          event: s3:ObjectCreated:*
+  
+  checkconfig:
+    handler: handler.checkconfig
+    events:
+      - s3:
+          bucket: mg-s3-pgp-config
+          event: s3:ObjectCreated:*
